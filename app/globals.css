@@ -6,7 +6,7 @@
 
 :root {
   --color-bg: #0a0a12;
-  --color-bg-card: rgba(20,18,26,0.92);
+  --color-bg-card: rgba(20,18,26,0.1);
   --color-primary: #A259FF;
   --color-accent: #8B5CF6;
   --color-text: #fff;
