@@ -58,7 +58,7 @@ function EarthWithMarkers() {
   });
 
   return (
-    <group>
+    <group position={[0, 0.09, 0]}>
       {/* Rotating group - Earth + Markers + Arcs rotate together */}
       <group ref={groupRef}>
         {/* Base Earth Sphere with colorful texture - CLEAN & SOLID */}
