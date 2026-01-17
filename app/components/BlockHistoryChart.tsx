@@ -14,14 +14,14 @@ export default function BlockHistoryChart() {
           Block History (Tx Count)
         </h3>
         <div className="flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#00D9A5] animate-pulse"></span>
-          <span className="text-[10px] text-[#00D9A5] font-bold">Live</span>
+          <span className="w-1.5 h-1.5 rounded-full bg-[#A259FF] animate-pulse"></span>
+          <span className="text-[10px] text-[#A259FF] font-bold">Live</span>
         </div>
       </div>
 
       {isLoading && history.length === 0 ? (
         <div className="flex items-center justify-center h-6 mb-1">
-          <Loader2 className="w-4 h-4 text-[#00D9A5] animate-spin" />
+          <Loader2 className="w-4 h-4 text-[#A259FF] animate-spin" />
           <span className="text-[10px] text-gray-500 ml-2">Loading blocks...</span>
         </div>
       ) : (
@@ -38,7 +38,7 @@ export default function BlockHistoryChart() {
                 initial={{ height: 0 }}
                 animate={{ height: `${heightPercent}%` }}
                 transition={{ duration: 0.3, delay: i * 0.01 }}
-                className="flex-1 rounded-t-[2px] bg-[#00D9A5] cursor-pointer hover:bg-[#3B82F6] transition-colors"
+                className="flex-1 rounded-t-[2px] bg-[#A259FF] cursor-pointer hover:bg-[#8B5CF6] transition-colors"
                 style={{ opacity }}
                 title={`Block #${block.blockNumber.toLocaleString()}\n${block.txCount} transactions`}
                 onClick={() => window.open(`https://chainscan.0g.ai/block/${block.blockNumber}`, '_blank')}
@@ -57,7 +57,7 @@ export default function BlockHistoryChart() {
         </span>
         <div className="flex gap-3">
           <span className="flex items-center gap-1">
-            <span className="w-1.5 h-1.5 bg-[#00D9A5] rounded-full opacity-40"></span>
+            <span className="w-1.5 h-1.5 bg-[#A259FF] rounded-full opacity-40"></span>
             Low
           </span>
           <span className="flex items-center gap-1">

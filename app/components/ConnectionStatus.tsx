@@ -9,8 +9,8 @@ export default function ConnectionStatus() {
 
   const statusConfig = {
     connecting: {
-      color: 'text-yellow-400',
-      bgColor: 'bg-yellow-400/20',
+      color: 'text-[#00D9A5]',
+      bgColor: 'bg-[#00D9A5]/20',
       icon: Signal,
       label: 'Connecting...',
     },

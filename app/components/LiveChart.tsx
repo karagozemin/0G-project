@@ -81,17 +81,17 @@ export function TPSChart() {
     <div className="glass-panel rounded-xl p-3">
       <div className="flex justify-between items-start mb-2">
         <div className="flex items-center gap-2">
-          <Activity className="w-4 h-4 text-[#00D9A5]" />
+          <Activity className="w-4 h-4 text-[#A259FF]" />
           <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">TPS History</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#00D9A5] animate-pulse"></span>
-          <span className="text-[10px] text-[#00D9A5] font-bold">Live</span>
+          <span className="w-1.5 h-1.5 rounded-full bg-[#A259FF] animate-pulse"></span>
+          <span className="text-[10px] text-[#A259FF] font-bold">Live</span>
         </div>
       </div>
       
       <div className="h-[60px] mb-2">
-        <MiniChart data={history} color="#00D9A5" />
+        <MiniChart data={history} color="#A259FF" />
       </div>
       
       <div className="flex justify-between text-[10px]">
@@ -101,7 +101,7 @@ export function TPSChart() {
         </div>
         <div>
           <span className="text-gray-500">Avg: </span>
-          <span className="font-mono font-bold text-[#00D9A5]">{avgTPS}</span>
+          <span className="font-mono font-bold text-[#A259FF]">{avgTPS}</span>
         </div>
         <div>
           <span className="text-gray-500">Peak: </span>
