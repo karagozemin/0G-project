@@ -74,22 +74,48 @@ export function useZeroG(refreshInterval: number = 3000) {
       const fetchedBlocks = await Promise.all(blockPromises);
       const validBlocks = fetchedBlocks.filter((b): b is BlockData => b !== null);
       
-      // Format blocks for display
+      // Get event logs from last 50 blocks to count transactions per block
+      const fromBlock = blockNumber - 50n;
+      let blockTxMap = new Map<number, number>();
+      try {
+        const logs = await zeroGClient.getLogs({
+          fromBlock,
+          toBlock: 'latest',
+        });
+        
+        // Count unique transactions per block
+        const tempMap = new Map<number, Set<string>>();
+        for (const log of logs) {
+          const blockNum = Number(log.blockNumber);
+          if (!tempMap.has(blockNum)) {
+            tempMap.set(blockNum, new Set());
+          }
+          if (log.transactionHash) {
+            tempMap.get(blockNum)!.add(log.transactionHash);
+          }
+        }
+        blockTxMap = new Map([...tempMap.entries()].map(([k, v]) => [k, v.size]));
+      } catch (e) {
+        console.error('Error fetching logs:', e);
+      }
+      
+      // Format blocks for display with tx count from logs
       const formattedBlocks: ZeroGBlock[] = validBlocks.map(block => ({
         number: Number(block.number),
         hash: block.hash,
         timestamp: Number(block.timestamp),
-        txCount: Array.isArray(block.transactions) ? block.transactions.length : 0,
+        txCount: blockTxMap.get(Number(block.number)) || 0,
         gasUsed: (Number(block.gasUsed) / 1e9).toFixed(2),
       }));
 
       setBlocks(formattedBlocks);
 
-      // Calculate TPS from latest block
-      const latestBlock = validBlocks[0];
-      const txCount = latestBlock ? 
-        (Array.isArray(latestBlock.transactions) ? latestBlock.transactions.length : 0) : 0;
-      const currentTps = Math.round(txCount / 2); // Will be adjusted based on actual block time
+      // Calculate TPS from recent logs
+      const recentTxCounts = Array.from(blockTxMap.values());
+      const totalRecentTx = recentTxCounts.reduce((sum, count) => sum + count, 0);
+      const currentTps = recentTxCounts.length > 0 
+        ? Math.round((totalRecentTx / Math.max(recentTxCounts.length * 2, 1)) * 10) / 10
+        : 0;
 
       // Update TPS history and calculate peak
       setTpsHistory(prev => {
@@ -97,9 +123,10 @@ export function useZeroG(refreshInterval: number = 3000) {
         return newHistory;
       });
 
-      const peakTps = Math.max(...tpsHistory, currentTps);
+      const peakTps = Math.max(...tpsHistory, currentTps, 1);
 
       // Get base fee from latest block
+      const latestBlock = validBlocks[0];
       const baseFee = latestBlock?.baseFeePerGas 
         ? formatGwei(latestBlock.baseFeePerGas) 
         : '0';
@@ -236,7 +263,7 @@ export function useTransactions(refreshInterval: number = 5000) {
   return { transactions, isLoading, error, refetch: fetchTransactions };
 }
 
-// Hook for TPS history (for charts)
+// Hook for TPS history (for charts) - uses event logs
 export function useTPSHistory(maxPoints: number = 30) {
   const [history, setHistory] = useState<HistoryPoint[]>([]);
   const lastBlockRef = useRef<number>(0);
@@ -244,14 +271,32 @@ export function useTPSHistory(maxPoints: number = 30) {
   useEffect(() => {
     const fetchTPS = async () => {
       try {
-        const block = await zeroGClient.getBlock({ includeTransactions: false });
-        const blockNum = Number(block.number);
+        const latestBlockNumber = await zeroGClient.getBlockNumber();
+        const blockNum = Number(latestBlockNumber);
         
         // Only add new point if block changed
         if (blockNum !== lastBlockRef.current) {
           lastBlockRef.current = blockNum;
-          const txCount = Array.isArray(block.transactions) ? block.transactions.length : 0;
-          const tps = Math.round(txCount / 2); // Will be adjusted based on actual block time
+          
+          // Get logs from last 10 blocks to calculate TPS
+          const fromBlock = latestBlockNumber - 10n;
+          const logs = await zeroGClient.getLogs({
+            fromBlock,
+            toBlock: 'latest',
+          });
+          
+          // Count unique transactions
+          const uniqueTxs = new Set(logs.map(log => log.transactionHash));
+          const txCount = uniqueTxs.size;
+          
+          // Get block time span
+          const [latestBlock, olderBlock] = await Promise.all([
+            zeroGClient.getBlock({ blockNumber: latestBlockNumber }),
+            zeroGClient.getBlock({ blockNumber: fromBlock }),
+          ]);
+          
+          const timeSpan = Number(latestBlock.timestamp) - Number(olderBlock.timestamp);
+          const tps = timeSpan > 0 ? Math.round((txCount / timeSpan) * 10) / 10 : 0;
           
           setHistory(prev => {
             const newPoint = { timestamp: Date.now(), value: tps };
@@ -305,7 +350,7 @@ export interface BlockHistoryItem {
   timestamp: number;
 }
 
-// Hook for Block History (last N blocks with tx counts)
+// Hook for Block History (last N blocks with tx counts from event logs)
 export function useBlockHistory(blockCount: number = 45) {
   const [history, setHistory] = useState<BlockHistoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -321,19 +366,42 @@ export function useBlockHistory(blockCount: number = 45) {
         // Only fetch new blocks
         if (lastFetchedBlock.current === latestNum) return;
         
-        // Fetch blocks in parallel (batches of 10)
+        // Calculate from block (look back enough to cover blockCount blocks)
+        const fromBlock = latestBlockNumber - BigInt(blockCount);
+        
+        // Get event logs to count transactions per block
+        const logs = await zeroGClient.getLogs({
+          fromBlock,
+          toBlock: 'latest',
+        });
+        
+        // Count unique transactions per block
+        const blockTxMap = new Map<number, Set<string>>();
+        
+        for (const log of logs) {
+          const blockNum = Number(log.blockNumber);
+          if (!blockTxMap.has(blockNum)) {
+            blockTxMap.set(blockNum, new Set());
+          }
+          if (log.transactionHash) {
+            blockTxMap.get(blockNum)!.add(log.transactionHash);
+          }
+        }
+        
+        // Fetch block timestamps in batches
         const blocks: BlockHistoryItem[] = [];
-        const batchSize = 10;
+        const batchSize = 15;
         
         for (let i = 0; i < blockCount; i += batchSize) {
           const batchPromises = [];
           for (let j = i; j < Math.min(i + batchSize, blockCount); j++) {
             const blockNum = latestBlockNumber - BigInt(j);
+            const blockNumInt = Number(blockNum);
             batchPromises.push(
               zeroGClient.getBlock({ blockNumber: blockNum, includeTransactions: false })
                 .then(block => ({
                   blockNumber: Number(block.number),
-                  txCount: Array.isArray(block.transactions) ? block.transactions.length : 0,
+                  txCount: blockTxMap.get(blockNumInt)?.size || 0,
                   timestamp: Number(block.timestamp),
                 }))
                 .catch(() => null)

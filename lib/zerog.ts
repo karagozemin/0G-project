@@ -141,33 +141,67 @@ export function formatBlockForDisplay(block: BlockData) {
   };
 }
 
-// Get latest transactions from recent blocks
+// 0G Storage Contract Addresses (for event filtering)
+const ZEROG_CONTRACTS = {
+  flow: '0x62D4144dB0F0a6fBBaeb6296c785C71B3D57C526' as const,
+  mine: '0xCd01c5Cd953971CE4C2c9bFb95610236a7F414fe' as const,
+  reward: '0x457aC76B58ffcDc118AABD6DbC63ff9072880870' as const,
+  staking: '0xc545f6ee41cee5a0e07d12033dc037a08073f626' as const,
+};
+
+// Get latest transactions using eth_getLogs (0G uses event-based transaction tracking)
 export async function getLatestTransactions(count: number = 10): Promise<TransactionData[]> {
   try {
-    const block = await zeroGClient.getBlock({
-      includeTransactions: true,
+    const latestBlock = await zeroGClient.getBlockNumber();
+    const fromBlock = latestBlock - BigInt(500); // Look back ~500 blocks to avoid 10k log limit
+    
+    // Fetch logs from all contracts
+    const logs = await zeroGClient.getLogs({
+      fromBlock,
+      toBlock: 'latest',
     });
     
-    const transactions: TransactionData[] = [];
-    const txs = block.transactions as any[];
+    if (logs.length === 0) {
+      return [];
+    }
     
-    for (let i = 0; i < Math.min(count, txs.length); i++) {
-      const tx = txs[i];
-      if (typeof tx === 'object') {
-        transactions.push({
-          hash: tx.hash,
-          from: tx.from,
-          to: tx.to,
-          value: tx.value,
-          gasPrice: tx.gasPrice,
-          gas: tx.gas,
-          input: tx.input,
-          blockNumber: block.number,
-          blockHash: block.hash,
-          transactionIndex: tx.transactionIndex,
-          timestamp: Number(block.timestamp),
-        });
-      }
+    // Get unique transaction hashes (most recent first)
+    const uniqueTxHashes = [...new Set(logs.map(log => log.transactionHash).filter(Boolean))].reverse();
+    const transactions: TransactionData[] = [];
+    
+    // Fetch transaction details in parallel (batch of 5)
+    const batchSize = 5;
+    for (let i = 0; i < Math.min(count, uniqueTxHashes.length); i += batchSize) {
+      const batch = uniqueTxHashes.slice(i, Math.min(i + batchSize, Math.min(count, uniqueTxHashes.length)));
+      
+      const txPromises = batch.map(async (txHash): Promise<TransactionData | null> => {
+        if (!txHash) return null;
+        try {
+          const tx = await zeroGClient.getTransaction({ hash: txHash });
+          const block = await zeroGClient.getBlock({ blockNumber: tx.blockNumber! });
+          
+          return {
+            hash: tx.hash,
+            from: tx.from,
+            to: tx.to,
+            value: tx.value,
+            gasPrice: tx.gasPrice,
+            gas: tx.gas,
+            input: tx.input,
+            blockNumber: tx.blockNumber!,
+            blockHash: tx.blockHash!,
+            transactionIndex: tx.transactionIndex!,
+            timestamp: Number(block.timestamp),
+          } as TransactionData;
+        } catch (err) {
+          console.error('Error fetching tx details:', err);
+          return null;
+        }
+      });
+      
+      const results = await Promise.all(txPromises);
+      const validResults = results.filter((tx): tx is TransactionData => tx !== null);
+      transactions.push(...validResults);
     }
     
     return transactions;
