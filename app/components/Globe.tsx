@@ -18,7 +18,7 @@ const atmosphereFragmentShader = `
   varying vec3 vNormal;
   void main() {
     float intensity = pow(0.6 - dot(vNormal, vec3(0, 0, 1.0)), 2.5);
-    gl_FragColor = vec4(0.0, 0.85, 0.65, 1.0) * intensity * 0.9;
+    gl_FragColor = vec4(0.64, 0.35, 1.0, 1.0) * intensity * 0.9; // Mor efekt
   }
 `;
 
@@ -75,7 +75,7 @@ function EarthWithMarkers() {
           <GlowingMarker 
             key={i} 
             position={pos} 
-            color={i % 3 === 0 ? "#00D9A5" : i % 3 === 1 ? "#00B894" : "#10B981"}
+            color={i % 3 === 0 ? "#A259FF" : i % 3 === 1 ? "#8B5CF6" : "#C084FC"}
             size={0.016}
           />
         ))}
@@ -101,7 +101,7 @@ function EarthWithMarkers() {
 }
 
 // Static glowing dot marker - NO animation
-function GlowingMarker({ position, color = "#00D9A5", size = 0.02 }: { position: THREE.Vector3; color?: string; size?: number }) {
+function GlowingMarker({ position, color = "#A259FF", size = 0.02 }: { position: THREE.Vector3; color?: string; size?: number }) {
   return (
     <group position={position}>
       {/* Core dot - bright center */}
@@ -123,7 +123,7 @@ function AnimatedArc({
   startPos, 
   endPos, 
   duration = 0.5,
-  color = "#00D9A5"
+  color = "#A259FF"
 }: { 
   startPos: THREE.Vector3; 
   endPos: THREE.Vector3; 
@@ -285,7 +285,7 @@ export default function Globe() {
       <Canvas camera={{ position: [0, 0, 4.8], fov: 45 }}>
         <ambientLight intensity={1} />
         <directionalLight position={[5, 3, 5]} intensity={2.5} color="#ffffff" />
-        <directionalLight position={[-3, 2, -3]} intensity={1.2} color="#00D9A5" />
+        <directionalLight position={[-3, 2, -3]} intensity={1.2} color="#A259FF" />
         <pointLight position={[-5, -2, -5]} intensity={1} color="#00B894" />
         <pointLight position={[0, 5, 0]} intensity={0.8} color="#ffffff" />
         
