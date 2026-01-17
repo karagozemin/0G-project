@@ -74,12 +74,13 @@ export default function Home() {
     }
   }, [stats.tps, updatePeak]);
 
-  // Format block time for display
+  // Format block time for display (convert ms to seconds)
   const formatBlockTime = (ms: number) => {
-    if (ms >= 1000) {
-      return `${(ms / 1000).toFixed(1)}`;
+    const seconds = ms / 1000;
+    if (seconds < 1) {
+      return seconds.toFixed(2);
     }
-    return `${ms}`;
+    return seconds.toFixed(1);
   };
 
   // Format peak timestamp

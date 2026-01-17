@@ -28,7 +28,7 @@ export default function Header() {
               className="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer"
             >
               <img 
-              src="/zerog-logo.png" 
+              src="/panda-logo.png" 
               alt="Zerix Logo" 
               className="w-10 h-10 rounded-full object-cover ring-2 ring-[#00D9A5]/30"
             />

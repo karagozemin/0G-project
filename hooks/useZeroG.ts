@@ -74,8 +74,8 @@ export function useZeroG(refreshInterval: number = 3000) {
       const fetchedBlocks = await Promise.all(blockPromises);
       const validBlocks = fetchedBlocks.filter((b): b is BlockData => b !== null);
       
-      // Get event logs from last 50 blocks to count transactions per block
-      const fromBlock = blockNumber - 50n;
+      // Get event logs from last 200 blocks to count transactions per block
+      const fromBlock = blockNumber - 200n;
       let blockTxMap = new Map<number, number>();
       try {
         const logs = await zeroGClient.getLogs({
