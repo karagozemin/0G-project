@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useBlockHistory, type BlockHistoryItem } from "@/hooks/useMantle";
+import { useBlockHistory, type BlockHistoryItem } from "@/hooks/useZeroG";
 import { Loader2 } from "lucide-react";
 
 export default function BlockHistoryChart() {
@@ -41,7 +41,7 @@ export default function BlockHistoryChart() {
                 className="flex-1 rounded-t-[2px] bg-[#00D9A5] cursor-pointer hover:bg-[#3B82F6] transition-colors"
                 style={{ opacity }}
                 title={`Block #${block.blockNumber.toLocaleString()}\n${block.txCount} transactions`}
-                onClick={() => window.open(`https://explorer.mantle.xyz/block/${block.blockNumber}`, '_blank')}
+                onClick={() => window.open(`https://chainscan.0g.ai/block/${block.blockNumber}`, '_blank')}
               />
             );
           })}

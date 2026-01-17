@@ -8,7 +8,7 @@ import ConnectionStatus from "./ConnectionStatus";
 export default function Header() {
   const navItems = [
     { label: "Home", href: "/", icon: Home, external: false },
-    { label: "Docs", href: "https://docs.mantle.xyz/network/", icon: BookOpen, external: true },
+    { label: "Docs", href: "https://docs.0g.ai/", icon: BookOpen, external: true },
   ];
 
   return (
@@ -28,13 +28,13 @@ export default function Header() {
               className="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer"
             >
               <img 
-              src="/GzSli3caYAAQ5UK.jpeg" 
-              alt="Manix Logo" 
+              src="/zerog-logo.png" 
+              alt="Zerix Logo" 
               className="w-10 h-10 rounded-full object-cover ring-2 ring-[#00D9A5]/30"
             />
               <div>
-                <h1 className="text-xl font-bold text-white">Manix</h1>
-                <p className="text-xs text-zinc-400">Mantle Network</p>
+                <h1 className="text-xl font-bold text-white">Zerix</h1>
+                <p className="text-xs text-zinc-400">0G Network</p>
               </div>
             </motion.div>
           </Link>

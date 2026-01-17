@@ -49,7 +49,7 @@ export async function POST(request: Request) {
       apiKey: process.env.GROQ_API_KEY,
     });
 
-    const prompt = `You are an AI analyst for Mantle Network (Ethereum L2). Analyze these real-time metrics and provide ONE brief, actionable insight (max 100 chars):
+    const prompt = `You are an AI analyst for 0G Network (AI-native blockchain). Analyze these real-time metrics and provide ONE brief, actionable insight (max 100 chars):
 
 Network Metrics:
 - Current TPS: ${tps} transactions/second
@@ -99,7 +99,7 @@ Respond with ONLY the insight text, no quotes or explanation. Be specific and ac
     console.error('AI Insight Error:', error);
     
     // Return fallback on error
-    const fallbackInsight = 'Network operating normally. Mantle L2 ready for transactions.';
+    const fallbackInsight = 'Network operating normally. 0G Network ready for transactions.';
     
     // Cache error fallback too
     cachedInsight = { insight: fallbackInsight, timestamp: Date.now(), source: 'fallback' };

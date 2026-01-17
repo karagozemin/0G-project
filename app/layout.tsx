@@ -15,8 +15,8 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Manix | Mantle Network Explorer",
-  description: "Real-time visualization of the Mantle Network",
+  title: "Zerix | 0G Network Explorer",
+  description: "Real-time visualization of the 0G Network",
 };
 
 export default function RootLayout({

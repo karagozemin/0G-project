@@ -13,11 +13,11 @@ import BlockHistoryChart from "./components/BlockHistoryChart";
 import { TPSChart, GasPriceChart } from "./components/LiveChart";
 import NetworkInsights from "./components/NetworkInsights";
 import { Clock, TrendingUp, Activity, Blocks, Fuel, Loader2 } from "lucide-react";
-import { useMantle, useRealBlockTime, usePersistentPeakTPS, type MantleBlock } from "@/hooks/useMantle";
+import { useZeroG, useRealBlockTime, usePersistentPeakTPS, type ZeroGBlock } from "@/hooks/useZeroG";
 
 const Globe = dynamic(() => import("./components/Globe"), { ssr: false });
 
-function RecentBlockRow({ block, index }: { block: MantleBlock; index: number }) {
+function RecentBlockRow({ block, index }: { block: ZeroGBlock; index: number }) {
   const formatTime = (timestamp: number) => {
     const now = Math.floor(Date.now() / 1000);
     const diff = now - timestamp;
@@ -34,7 +34,7 @@ function RecentBlockRow({ block, index }: { block: MantleBlock; index: number })
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.3, delay: index * 0.05 }}
       className="flex justify-between items-center py-2 border-b border-white/5 last:border-0 hover:bg-white/5 px-2 rounded transition-colors cursor-pointer"
-      onClick={() => window.open(`https://explorer.mantle.xyz/block/${block.number}`, '_blank')}
+      onClick={() => window.open(`https://chainscan.0g.ai/block/${block.number}`, '_blank')}
     >
       <div className="flex items-center gap-3">
         <div className="p-1.5 bg-[#8B5CF6]/10 rounded-lg">
@@ -57,13 +57,13 @@ function LoadingState() {
   return (
     <div className="flex items-center justify-center py-8">
       <Loader2 className="w-6 h-6 text-[#00D9A5] animate-spin" />
-      <span className="ml-2 text-sm text-gray-400">Connecting to Mantle...</span>
+      <span className="ml-2 text-sm text-gray-400">Connecting to 0G...</span>
     </div>
   );
 }
 
 export default function Home() {
-  const { blocks, stats, isLoading, error } = useMantle(3000);
+  const { blocks, stats, isLoading, error } = useZeroG(3000);
   const { blockTime, isCalculating } = useRealBlockTime();
   const { peakTps, peakTimestamp, updatePeak } = usePersistentPeakTPS();
 
@@ -153,13 +153,13 @@ export default function Home() {
             <div className="h-7 w-px bg-white/10" />
             <div className="flex items-center gap-2">
               <img 
-                src="/mantle-logo.png" 
-                alt="Mantle" 
+                src="/zerog-logo.png" 
+                alt="0G" 
                 className="w-7 h-7 rounded-full object-contain"
               />
               <div className="flex flex-col">
-                <span className="text-[11px] font-bold">Mantle L2</span>
-                <span className="text-[9px] text-gray-400">Sequencer</span>
+                <span className="text-[11px] font-bold">0G Network</span>
+                <span className="text-[9px] text-gray-400">Mainnet</span>
               </div>
             </div>
           </motion.div>
@@ -171,7 +171,7 @@ export default function Home() {
           >
             <div className="flex flex-col items-center">
               <span className="text-[9px] text-gray-500 uppercase">Chain ID</span>
-              <span className="text-xs font-bold font-mono">5000</span>
+              <span className="text-xs font-bold font-mono">16661</span>
             </div>
             <div className="h-5 w-px bg-white/10" />
             <div className="flex flex-col items-center">
@@ -198,7 +198,7 @@ export default function Home() {
                 <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Recent Blocks</h3>
                 <div className="flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#8B5CF6] animate-pulse"></span>
-                  <span className="text-[10px] text-[#8B5CF6] font-bold">Live from Mantle</span>
+                  <span className="text-[10px] text-[#8B5CF6] font-bold">Live from 0G</span>
                 </div>
               </div>
               <div className="flex flex-col gap-1 overflow-hidden">
@@ -319,15 +319,15 @@ export default function Home() {
                   <Fuel className="w-3.5 h-3.5 text-gray-500" />
                   <span className="text-[10px] text-gray-500 uppercase">Gas Token</span>
                 </div>
-                <span className="text-xl font-mono font-bold text-[#00D9A5]">MNT</span>
+                <span className="text-xl font-mono font-bold text-[#00D9A5]">0G</span>
                 <span className="text-[9px] text-gray-500">Native</span>
               </div>
 
               {/* Layer */}
               <div className="bg-white/5 rounded-lg p-3 flex flex-col justify-center items-center">
                 <span className="text-[10px] text-gray-500 uppercase mb-1">Layer</span>
-                <span className="text-xl font-mono font-bold text-[#3B82F6]">L2</span>
-                <span className="text-[9px] text-gray-500">Ethereum Rollup</span>
+                <span className="text-xl font-mono font-bold text-[#3B82F6]">L1</span>
+                <span className="text-[9px] text-gray-500">AI Blockchain</span>
               </div>
             </div>
 

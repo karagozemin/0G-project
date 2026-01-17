@@ -2,22 +2,22 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { 
-  getMantleTVL, 
-  getMantleProtocols, 
-  getMantleTVLHistory,
+  getZeroGTVL, 
+  getZeroGProtocols, 
+  getZeroGTVLHistory,
   type TVLData, 
   type ProtocolData 
 } from '@/lib/defillama';
 
-// Hook for Mantle TVL data
-export function useMantleTVL(refreshInterval: number = 60000) {
+// Hook for 0G TVL data
+export function useZeroGTVL(refreshInterval: number = 60000) {
   const [tvlData, setTvlData] = useState<TVLData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchTVL = useCallback(async () => {
     try {
-      const data = await getMantleTVL();
+      const data = await getZeroGTVL();
       setTvlData(data);
       setError(null);
       setIsLoading(false);
@@ -40,14 +40,14 @@ export function useMantleTVL(refreshInterval: number = 60000) {
 }
 
 // Hook for top protocols
-export function useMantleProtocols(limit: number = 5, refreshInterval: number = 120000) {
+export function useZeroGProtocols(limit: number = 5, refreshInterval: number = 120000) {
   const [protocols, setProtocols] = useState<ProtocolData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchProtocols = useCallback(async () => {
     try {
-      const data = await getMantleProtocols(limit);
+      const data = await getZeroGProtocols(limit);
       setProtocols(data);
       setError(null);
       setIsLoading(false);
@@ -77,7 +77,7 @@ export function useTVLHistory() {
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const data = await getMantleTVLHistory();
+        const data = await getZeroGTVLHistory();
         setHistory(data);
         setIsLoading(false);
       } catch (err) {

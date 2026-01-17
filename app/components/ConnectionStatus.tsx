@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Wifi, WifiOff, Signal, Clock } from "lucide-react";
-import { useConnectionStatus } from "@/hooks/useMantleWebSocket";
+import { useConnectionStatus } from "@/hooks/useZeroGWebSocket";
 
 export default function ConnectionStatus() {
   const { status, latency } = useConnectionStatus();

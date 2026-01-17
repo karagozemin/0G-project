@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { mantleClient, type BlockData, type TransactionData, getLatestTransactions, truncateAddress, truncateHash, formatMNT } from '@/lib/mantle';
+import { zeroGClient, type BlockData, type TransactionData, getLatestTransactions, truncateAddress, truncateHash, format0G } from '@/lib/zerog';
 import { formatGwei, formatEther } from 'viem';
 
 // Types
-export interface MantleBlock {
+export interface ZeroGBlock {
   number: number;
   hash: string;
   timestamp: number;
@@ -13,7 +13,7 @@ export interface MantleBlock {
   gasUsed: string;
 }
 
-export interface MantleStats {
+export interface ZeroGStats {
   blockNumber: number;
   gasPrice: string;
   baseFee: string;
@@ -21,7 +21,7 @@ export interface MantleStats {
   peakTps: number;
 }
 
-export interface MantleTransaction {
+export interface ZeroGTransaction {
   hash: string;
   from: string;
   to: string | null;
@@ -36,10 +36,10 @@ export interface HistoryPoint {
   value: number;
 }
 
-// Hook for real-time Mantle network data
-export function useMantle(refreshInterval: number = 3000) {
-  const [blocks, setBlocks] = useState<MantleBlock[]>([]);
-  const [stats, setStats] = useState<MantleStats>({
+// Hook for real-time 0G network data
+export function useZeroG(refreshInterval: number = 3000) {
+  const [blocks, setBlocks] = useState<ZeroGBlock[]>([]);
+  const [stats, setStats] = useState<ZeroGStats>({
     blockNumber: 0,
     gasPrice: '0',
     baseFee: '0',
@@ -55,17 +55,17 @@ export function useMantle(refreshInterval: number = 3000) {
   const fetchData = useCallback(async () => {
     try {
       // Fetch latest block number
-      const blockNumber = await mantleClient.getBlockNumber();
+      const blockNumber = await zeroGClient.getBlockNumber();
       
       // Fetch gas price
-      const gasPrice = await mantleClient.getGasPrice();
+      const gasPrice = await zeroGClient.getGasPrice();
       
       // Fetch latest 3 blocks
       const blockPromises: Promise<BlockData | null>[] = [];
       for (let i = 0; i < 3; i++) {
         const num = blockNumber - BigInt(i);
         blockPromises.push(
-          mantleClient.getBlock({ blockNumber: num, includeTransactions: false })
+          zeroGClient.getBlock({ blockNumber: num, includeTransactions: false })
             .then(b => b as BlockData)
             .catch(() => null)
         );
@@ -75,7 +75,7 @@ export function useMantle(refreshInterval: number = 3000) {
       const validBlocks = fetchedBlocks.filter((b): b is BlockData => b !== null);
       
       // Format blocks for display
-      const formattedBlocks: MantleBlock[] = validBlocks.map(block => ({
+      const formattedBlocks: ZeroGBlock[] = validBlocks.map(block => ({
         number: Number(block.number),
         hash: block.hash,
         timestamp: Number(block.timestamp),
@@ -85,11 +85,11 @@ export function useMantle(refreshInterval: number = 3000) {
 
       setBlocks(formattedBlocks);
 
-      // Calculate TPS from latest block (Mantle ~2s block time)
+      // Calculate TPS from latest block
       const latestBlock = validBlocks[0];
       const txCount = latestBlock ? 
         (Array.isArray(latestBlock.transactions) ? latestBlock.transactions.length : 0) : 0;
-      const currentTps = Math.round(txCount / 2); // ~2 second blocks
+      const currentTps = Math.round(txCount / 2); // Will be adjusted based on actual block time
 
       // Update TPS history and calculate peak
       setTpsHistory(prev => {
@@ -115,7 +115,7 @@ export function useMantle(refreshInterval: number = 3000) {
       setError(null);
       setIsLoading(false);
     } catch (err) {
-      console.error('Error fetching Mantle data:', err);
+      console.error('Error fetching 0G data:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch data');
       setIsLoading(false);
     }
@@ -148,7 +148,7 @@ export function useBlockNumber(refreshInterval: number = 2000) {
   useEffect(() => {
     const fetch = async () => {
       try {
-        const num = await mantleClient.getBlockNumber();
+        const num = await zeroGClient.getBlockNumber();
         setBlockNumber(Number(num));
       } catch (err) {
         console.error('Error fetching block number:', err);
@@ -170,7 +170,7 @@ export function useGasPrice(refreshInterval: number = 5000) {
   useEffect(() => {
     const fetch = async () => {
       try {
-        const price = await mantleClient.getGasPrice();
+        const price = await zeroGClient.getGasPrice();
         setGasPrice(formatGwei(price));
       } catch (err) {
         console.error('Error fetching gas price:', err);
@@ -187,7 +187,7 @@ export function useGasPrice(refreshInterval: number = 5000) {
 
 // Hook for recent transactions
 export function useTransactions(refreshInterval: number = 5000) {
-  const [transactions, setTransactions] = useState<MantleTransaction[]>([]);
+  const [transactions, setTransactions] = useState<ZeroGTransaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -195,7 +195,7 @@ export function useTransactions(refreshInterval: number = 5000) {
     try {
       const txs = await getLatestTransactions(10);
       
-      const formatted: MantleTransaction[] = txs.map(tx => {
+      const formatted: ZeroGTransaction[] = txs.map(tx => {
         // Determine transaction type
         let type: 'transfer' | 'contract' | 'deploy' = 'transfer';
         if (!tx.to) {
@@ -244,14 +244,14 @@ export function useTPSHistory(maxPoints: number = 30) {
   useEffect(() => {
     const fetchTPS = async () => {
       try {
-        const block = await mantleClient.getBlock({ includeTransactions: false });
+        const block = await zeroGClient.getBlock({ includeTransactions: false });
         const blockNum = Number(block.number);
         
         // Only add new point if block changed
         if (blockNum !== lastBlockRef.current) {
           lastBlockRef.current = blockNum;
           const txCount = Array.isArray(block.transactions) ? block.transactions.length : 0;
-          const tps = Math.round(txCount / 2); // ~2 second blocks
+          const tps = Math.round(txCount / 2); // Will be adjusted based on actual block time
           
           setHistory(prev => {
             const newPoint = { timestamp: Date.now(), value: tps };
@@ -278,7 +278,7 @@ export function useGasPriceHistory(maxPoints: number = 30) {
   useEffect(() => {
     const fetchGas = async () => {
       try {
-        const gasPrice = await mantleClient.getGasPrice();
+        const gasPrice = await zeroGClient.getGasPrice();
         const gweiValue = Number(formatGwei(gasPrice));
         
         setHistory(prev => {
@@ -315,7 +315,7 @@ export function useBlockHistory(blockCount: number = 45) {
   useEffect(() => {
     const fetchBlockHistory = async () => {
       try {
-        const latestBlockNumber = await mantleClient.getBlockNumber();
+        const latestBlockNumber = await zeroGClient.getBlockNumber();
         const latestNum = Number(latestBlockNumber);
         
         // Only fetch new blocks
@@ -330,7 +330,7 @@ export function useBlockHistory(blockCount: number = 45) {
           for (let j = i; j < Math.min(i + batchSize, blockCount); j++) {
             const blockNum = latestBlockNumber - BigInt(j);
             batchPromises.push(
-              mantleClient.getBlock({ blockNumber: blockNum, includeTransactions: false })
+              zeroGClient.getBlock({ blockNumber: blockNum, includeTransactions: false })
                 .then(block => ({
                   blockNumber: Number(block.number),
                   txCount: Array.isArray(block.transactions) ? block.transactions.length : 0,
@@ -372,12 +372,12 @@ export function useRealBlockTime() {
   useEffect(() => {
     const calculateBlockTime = async () => {
       try {
-        const latestBlockNumber = await mantleClient.getBlockNumber();
+        const latestBlockNumber = await zeroGClient.getBlockNumber();
         
         // Get last 10 blocks to calculate average
         const blocks = await Promise.all([
-          mantleClient.getBlock({ blockNumber: latestBlockNumber }),
-          mantleClient.getBlock({ blockNumber: latestBlockNumber - 10n }),
+          zeroGClient.getBlock({ blockNumber: latestBlockNumber }),
+          zeroGClient.getBlock({ blockNumber: latestBlockNumber - 10n }),
         ]);
         
         const latestTimestamp = Number(blocks[0].timestamp);
@@ -403,8 +403,8 @@ export function useRealBlockTime() {
 }
 
 // Hook for persistent Peak TPS (stored in localStorage)
-const PEAK_TPS_KEY = 'manix_peak_tps';
-const PEAK_TPS_TIMESTAMP_KEY = 'manix_peak_tps_timestamp';
+const PEAK_TPS_KEY = 'zerix_peak_tps';
+const PEAK_TPS_TIMESTAMP_KEY = 'zerix_peak_tps_timestamp';
 
 export function usePersistentPeakTPS() {
   const [peakTps, setPeakTps] = useState<number>(0);

@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { TrendingUp, TrendingDown, DollarSign, Layers, Loader2, ExternalLink } from "lucide-react";
-import { useMantleTVL, useMantleProtocols } from "@/hooks/useDefiLlama";
+import { useZeroGTVL, useZeroGProtocols } from "@/hooks/useDefiLlama";
 import { formatTVL, formatChange } from "@/lib/defillama";
 
 function ProtocolRow({ protocol, index }: { protocol: any; index: number }) {
@@ -43,8 +43,8 @@ function ProtocolRow({ protocol, index }: { protocol: any; index: number }) {
 }
 
 export default function TVLPanel() {
-  const { tvlData, isLoading: tvlLoading } = useMantleTVL();
-  const { protocols, isLoading: protocolsLoading } = useMantleProtocols(5);
+  const { tvlData, isLoading: tvlLoading } = useZeroGTVL();
+  const { protocols, isLoading: protocolsLoading } = useZeroGProtocols(5);
 
   const isPositive = (tvlData?.change24h ?? 0) >= 0;
 
@@ -58,7 +58,7 @@ export default function TVLPanel() {
           </h3>
         </div>
         <a 
-          href="https://defillama.com/chain/Mantle" 
+          href="https://defillama.com/chain/0G" 
           target="_blank" 
           rel="noopener noreferrer"
           className="text-[10px] text-gray-500 hover:text-[#00D9A5] flex items-center gap-1 transition-colors"

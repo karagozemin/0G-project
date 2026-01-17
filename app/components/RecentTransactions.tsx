@@ -2,10 +2,10 @@
 
 import { motion } from "framer-motion";
 import { ArrowRight, FileCode, Rocket, Loader2, ExternalLink } from "lucide-react";
-import { useTransactions, type MantleTransaction } from "@/hooks/useMantle";
-import { truncateAddress, truncateHash } from "@/lib/mantle";
+import { useTransactions, type ZeroGTransaction } from "@/hooks/useZeroG";
+import { truncateAddress, truncateHash } from "@/lib/zerog";
 
-function TransactionRow({ tx, index }: { tx: MantleTransaction; index: number }) {
+function TransactionRow({ tx, index }: { tx: ZeroGTransaction; index: number }) {
   const formatTime = (timestamp: number) => {
     const now = Math.floor(Date.now() / 1000);
     const diff = now - timestamp;
@@ -45,7 +45,7 @@ function TransactionRow({ tx, index }: { tx: MantleTransaction; index: number })
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.3, delay: index * 0.03 }}
       className="flex items-center justify-between py-2 px-2 border-b border-white/5 last:border-0 hover:bg-white/5 rounded transition-colors cursor-pointer group"
-      onClick={() => window.open(`https://explorer.mantle.xyz/tx/${tx.hash}`, '_blank')}
+      onClick={() => window.open(`https://chainscan.0g.ai/tx/${tx.hash}`, '_blank')}
     >
       <div className="flex items-center gap-3 flex-1 min-w-0">
         <div className="p-1.5 bg-white/5 rounded-lg">
@@ -73,7 +73,7 @@ function TransactionRow({ tx, index }: { tx: MantleTransaction; index: number })
       <div className="flex items-center gap-3">
         <div className="text-right">
           <div className="text-xs font-mono font-bold text-white">
-            {displayValue} <span className="text-gray-500 text-[10px]">MNT</span>
+            {displayValue} <span className="text-gray-500 text-[10px]">0G</span>
           </div>
           <div className="text-[10px] text-gray-500">{formatTime(tx.timestamp)}</div>
         </div>

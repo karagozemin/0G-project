@@ -1,4 +1,5 @@
-// DeFiLlama API for Mantle TVL and protocol data
+// DeFiLlama API for 0G TVL and protocol data
+// Note: 0G may not be listed on DeFiLlama yet, this is prepared for future integration
 
 const DEFILLAMA_BASE = 'https://api.llama.fi';
 
@@ -17,8 +18,8 @@ export interface ProtocolData {
   change24h: number;
 }
 
-// Get Mantle chain TVL with rank
-export async function getMantleTVL(): Promise<TVLData | null> {
+// Get 0G chain TVL with rank
+export async function getZeroGTVL(): Promise<TVLData | null> {
   try {
     const response = await fetch(`${DEFILLAMA_BASE}/v2/chains`);
     const chains = await response.json();
@@ -26,36 +27,45 @@ export async function getMantleTVL(): Promise<TVLData | null> {
     // Sort chains by TVL to get rank
     const sortedChains = [...chains].sort((a: any, b: any) => (b.tvl || 0) - (a.tvl || 0));
     
-    const mantleIndex = sortedChains.findIndex((c: any) => 
-      c.name.toLowerCase() === 'mantle' || c.gecko_id === 'mantle'
+    // Try to find 0G chain (may be listed as '0G', '0g', 'ZeroG', etc.)
+    const zeroGIndex = sortedChains.findIndex((c: any) => 
+      c.name.toLowerCase() === '0g' || 
+      c.name.toLowerCase() === 'zerog' ||
+      c.gecko_id === '0g'
     );
     
-    const mantle = sortedChains[mantleIndex];
+    const zeroG = sortedChains[zeroGIndex];
     
-    if (mantle) {
+    if (zeroG) {
       return {
-        tvl: mantle.tvl || 0,
-        change24h: mantle.change_1d || 0,
-        protocols: mantle.protocols || 0,
-        rank: mantleIndex + 1, // 1-indexed rank
+        tvl: zeroG.tvl || 0,
+        change24h: zeroG.change_1d || 0,
+        protocols: zeroG.protocols || 0,
+        rank: zeroGIndex + 1, // 1-indexed rank
       };
     }
-    return null;
+    // Return placeholder data if 0G not found on DeFiLlama
+    return {
+      tvl: 0,
+      change24h: 0,
+      protocols: 0,
+      rank: 0,
+    };
   } catch (error) {
-    console.error('Error fetching Mantle TVL:', error);
+    console.error('Error fetching 0G TVL:', error);
     return null;
   }
 }
 
-// Get top protocols on Mantle
-export async function getMantleProtocols(limit: number = 10): Promise<ProtocolData[]> {
+// Get top protocols on 0G
+export async function getZeroGProtocols(limit: number = 10): Promise<ProtocolData[]> {
   try {
     const response = await fetch(`${DEFILLAMA_BASE}/protocols`);
     const protocols = await response.json();
     
-    // Filter protocols that are on Mantle chain
-    const mantleProtocols = protocols
-      .filter((p: any) => p.chains?.includes('Mantle'))
+    // Filter protocols that are on 0G chain
+    const zeroGProtocols = protocols
+      .filter((p: any) => p.chains?.includes('0G') || p.chains?.includes('ZeroG'))
       .sort((a: any, b: any) => (b.tvl || 0) - (a.tvl || 0))
       .slice(0, limit)
       .map((p: any) => ({
@@ -66,26 +76,30 @@ export async function getMantleProtocols(limit: number = 10): Promise<ProtocolDa
         change24h: p.change_1d || 0,
       }));
     
-    return mantleProtocols;
+    return zeroGProtocols;
   } catch (error) {
-    console.error('Error fetching Mantle protocols:', error);
+    console.error('Error fetching 0G protocols:', error);
     return [];
   }
 }
 
-// Get Mantle historical TVL
-export async function getMantleTVLHistory(): Promise<{ date: number; tvl: number }[]> {
+// Get 0G historical TVL
+export async function getZeroGTVLHistory(): Promise<{ date: number; tvl: number }[]> {
   try {
-    const response = await fetch(`${DEFILLAMA_BASE}/v2/historicalChainTvl/Mantle`);
+    // Try different possible chain names
+    const response = await fetch(`${DEFILLAMA_BASE}/v2/historicalChainTvl/0G`);
     const data = await response.json();
     
-    // Return last 30 days
-    return data.slice(-30).map((d: any) => ({
-      date: d.date * 1000,
-      tvl: d.tvl,
-    }));
+    if (Array.isArray(data)) {
+      // Return last 30 days
+      return data.slice(-30).map((d: any) => ({
+        date: d.date * 1000,
+        tvl: d.tvl,
+      }));
+    }
+    return [];
   } catch (error) {
-    console.error('Error fetching Mantle TVL history:', error);
+    console.error('Error fetching 0G TVL history:', error);
     return [];
   }
 }
